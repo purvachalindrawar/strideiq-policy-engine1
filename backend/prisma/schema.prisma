@@ -1,9 +1,0 @@
-﻿# backend/prisma/schema.prisma
-// Prisma schema - placeholder. We'll run `prisma init` or generate later.
-generator client {
-  provider = "prisma-client-py"
-}
-datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
-}

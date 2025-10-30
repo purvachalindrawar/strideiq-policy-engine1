@@ -1,0 +1,29 @@
+generator client {
+  provider = "prisma-client-py"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Rule {
+  id          String   @id @default(cuid())
+  name        String
+  conditions  Json
+  actions     Json
+  active      Boolean  @default(true)
+  priority    Int
+  createdAt   DateTime @default(now())
+  audits      Audit[]
+}
+
+model Audit {
+  id          String   @id @default(cuid())
+  orgId       String
+  expenseJson Json
+  resultJson  Json
+  createdAt   DateTime @default(now())
+  ruleId      String?
+  rule        Rule?    @relation(fields: [ruleId], references: [id])
+}

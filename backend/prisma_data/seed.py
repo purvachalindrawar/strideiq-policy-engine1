@@ -7,6 +7,7 @@ Run once after Prisma & Postgres setup:
 """
 
 from prisma import Prisma
+
 import asyncio
 import json
 
