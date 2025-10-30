@@ -5,7 +5,7 @@ from datetime import datetime
 
 router = APIRouter()
 
-# --- Models ---------------------------------------------------------------
+# --- Models ---------------
 class Condition(BaseModel):
     field: str
     op: str
@@ -17,7 +17,7 @@ class Rule(BaseModel):
     conditions: List[Condition] = Field(default_factory=list)
     actions: List[str] = Field(default_factory=list)
     active: bool = True
-    priority: int = 0  # higher wins
+    priority: int = 0  
     created_at: Optional[datetime] = None
 
 class Expense(BaseModel):
@@ -40,9 +40,7 @@ class EvalResponse(BaseModel):
     actions: List[str]
     trace: List[EvalTraceItem]
 
-# --- Simple in-memory rule store (starter demo) ---------------------------
-# These are example rules to allow local testing without DB.
-# We will persist to DB/prisma in a following step.
+
 RULES: List[Rule] = [
     Rule(
         id="r1",
@@ -73,11 +71,11 @@ RULES: List[Rule] = [
     )
 ]
 
-# --- Helper: simple operator evaluation ----------------------------------
+# --- Helper: simple operator evaluation ----------------------
 def eval_condition(cond: Condition, expense: Expense) -> bool:
-    # Fetch the value from the expense
+    
     left = getattr(expense, cond.field, None)
-    # normalize ops and do comparisons safely
+   
     op = cond.op.strip()
     right = cond.value
 
@@ -95,10 +93,10 @@ def eval_condition(cond: Condition, expense: Expense) -> bool:
         if op == "in":
             return left in right if left is not None else False
         if op == "contains":
-            # text containment
+            
             return isinstance(left, str) and str(right).lower() in left.lower()
     except Exception:
-        # If conversion failed or missing field, treat as non-match
+       
         return False
     return False
 
@@ -107,7 +105,6 @@ def evaluate_rules(expense: Expense, rules: List[Rule]) -> EvalResponse:
     matched: List[Rule] = []
     trace: List[EvalTraceItem] = []
 
-    # Evaluate each active rule
     for r in rules:
         if not r.active:
             trace.append(EvalTraceItem(rule=r.id, matched=False, reason="inactive"))
@@ -125,15 +122,14 @@ def evaluate_rules(expense: Expense, rules: List[Rule]) -> EvalResponse:
         if all_match:
             matched.append(r)
 
-    # Determine winning rule(s)
     if not matched:
         return EvalResponse(matched_rules=[], winning_rule=None, actions=[], trace=trace)
 
-    # Sort by priority desc, then by number of conditions desc (more specific wins)
+    
     matched_sorted = sorted(matched, key=lambda x: (x.priority, len(x.conditions)), reverse=True)
 
     winning = matched_sorted[0]
-    # Merge actions from winning rule(s). For this prototype, pick single winning rule.
+    
     actions = winning.actions.copy()
 
     return EvalResponse(
@@ -143,14 +139,27 @@ def evaluate_rules(expense: Expense, rules: List[Rule]) -> EvalResponse:
         trace=trace
     )
 
-# --- API endpoint --------------------------------------------------------
+
 @router.post("/orgs/{orgId}/policy/evaluate", response_model=EvalResponse)
 async def evaluate(orgId: str, expense: Expense):
-    # Basic validation: ensure expense_id present
+    
     if not expense.expense_id:
         raise HTTPException(status_code=400, detail="expense_id is required")
 
-    # Run evaluation against in-memory rules (DB hooks later)
+    
     resp = evaluate_rules(expense, RULES)
     # NOTE: persist audit log in DB in a follow-up step
     return resp
+
+from app.services import audit_store
+router.get('/orgs/{orgId}/policy/audit')
+async def get_audit(orgId: str):\
+    return audit_store.get_last(10)
+import json
+old_evaluate = evaluate
+async def evaluate(orgId: str, expense: Expense):
+    if not expense.expense_id:
+        raise HTTPException(status_code=400, detail='expense_id is required')
+    result = evaluate_rules(expense, RULES)
+    audit_store.add_audit(orgId, json.loads(expense.model_dump_json()), json.loads(result.model_dump_json()))
+    return result
