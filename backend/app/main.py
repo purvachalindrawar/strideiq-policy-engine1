@@ -1,24 +1,17 @@
-﻿# backend/app/main.py
-from fastapi import FastAPI
-
-app = FastAPI()
-
-
-@app.get("/")
-def root():
-    return {"status": "ok", "service": "policy-engine-backend"}
-
+﻿from fastapi import FastAPI
 from app.routes import evaluate
-app.include_router(evaluate.router)
-
-
 from app.services.db_client import init_db, close_db
 
+app = FastAPI(title="StrideIQ Policy Engine")
+
+# Register routes
+app.include_router(evaluate.router)
+
+# Handle DB lifecycle
 @app.on_event("startup")
-async def on_startup():
+async def startup_event():
     await init_db()
 
 @app.on_event("shutdown")
-async def on_shutdown():
+async def shutdown_event():
     await close_db()
-
