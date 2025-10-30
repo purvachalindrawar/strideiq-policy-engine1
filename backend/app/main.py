@@ -7,7 +7,20 @@ app = FastAPI(title="StrideIQ Policy Engine")
 # Register routes
 app.include_router(evaluate.router)
 
-# Handle DB lifecycle
+# helpful root
+@app.get("/", tags=["meta"])
+async def root():
+    return {
+        "message": "StrideIQ Policy Engine (backend). See /docs for API documentation.",
+        "endpoints": {
+            "evaluate": "/orgs/{orgId}/policy/evaluate (POST)",
+            "audit": "/orgs/{orgId}/policy/audit (GET)",
+            "docs": "/docs",
+            "redoc": "/redoc"
+        }
+    }
+
+# Lifecycle hooks (keep what you already have)
 @app.on_event("startup")
 async def startup_event():
     await init_db()
