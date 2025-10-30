@@ -89,3 +89,25 @@ def test_rule_ordering_effect_specificity():
     assert set(result.matched_rules) == {"r1", "r2"}
     assert result.winning_rule == "r2"  # more conditions = more specific
     assert result.actions == ["flag_overtime"]
+def test_boundary_missing_field():
+    """Should handle missing required fields without crashing."""
+    import pytest
+    from app.routes.evaluate import evaluate_rules, Rule, Condition, Expense
+
+    rules = [
+        Rule(
+            id="r1",
+            name="Reject missing amount",
+            conditions=[Condition(field="amount", op=">", value=100)],
+            actions=["reject"],
+            priority=1
+        )
+    ]
+
+    # Missing 'amount' field should simply return no match
+    expense = Expense(expense_id="e5")  # no amount provided
+    result = evaluate_rules(expense, rules)
+
+    assert result.matched_rules == []
+    assert result.winning_rule is None
+    assert result.actions == []
