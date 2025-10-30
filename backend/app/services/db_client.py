@@ -11,6 +11,7 @@ from datetime import datetime
 from prisma import Prisma
 
 
+
 # --- Prisma client instance ----------------------------------------------
 db = Prisma()
 
