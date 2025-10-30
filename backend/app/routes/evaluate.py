@@ -163,3 +163,11 @@ async def evaluate(orgId: str, expense: Expense):
     result = evaluate_rules(expense, RULES)
     audit_store.add_audit(orgId, json.loads(expense.model_dump_json()), json.loads(result.model_dump_json()))
     return result
+
+# --- Additional endpoint: get last N audits ----------------------------------
+from app.services import audit_store
+
+@router.get("/orgs/{orgId}/policy/audit")
+async def get_audit(orgId: str):
+    """Return the last 10 evaluation audits for the given org."""
+    return audit_store.get_last(10)
