@@ -16,3 +16,25 @@ def test_single_rule_match():
     assert result.matched_rules == ["r1"]
     assert result.winning_rule == "r1"
     assert result.actions == ["flag"]
+def test_no_rule_match():
+    """Should return no matches when expense violates no rules."""
+    from app.routes.evaluate import evaluate_rules, Rule, Condition, Expense
+    rules = [
+        Rule(id='r1', name='Reject > 5000', conditions=[Condition(field='amount', op='>', value=5000)], actions=['reject'], priority=1)
+    ]
+    expense = Expense(expense_id='e2', amount=100)
+    result = evaluate_rules(expense, rules)
+    assert result.matched_rules == []
+    assert result.winning_rule is None
+    assert result.actions == []
+def test_no_rule_match():
+    """Should return no matches when expense violates no rules."""
+    from app.routes.evaluate import evaluate_rules, Rule, Condition, Expense
+    rules = [
+        Rule(id="r1", name="Reject > 5000", conditions=[Condition(field="amount", op=">", value=5000)], actions=["reject"], priority=1)
+    ]
+    expense = Expense(expense_id="e2", amount=100)
+    result = evaluate_rules(expense, rules)
+    assert result.matched_rules == []
+    assert result.winning_rule is None
+    assert result.actions == []
