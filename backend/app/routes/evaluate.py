@@ -1,4 +1,4 @@
-﻿from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any, Optional
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 from datetime import datetime
@@ -66,7 +66,7 @@ RULES: List[Rule] = [
     Rule(
         id="r3",
         name="Reject alcohol",
-        conditions=[Condition(field="category", op=="==", value="Alcohol")],
+        conditions=[Condition(field="category", op="==", value="Alcohol")],
         actions=["reject"],
         priority=30,
         created_at=datetime.utcnow()
@@ -117,7 +117,7 @@ def evaluate_rules(expense: Expense, rules: List[Rule]) -> EvalResponse:
         all_match = True
         for c in r.conditions:
             ok = eval_condition(c, expense)
-            reasons.append(f\"{c.field}{c.op}{c.value}:{ok}\")
+            reasons.append(f"{c.field}{c.op}{c.value}:{ok}")
             if not ok:
                 all_match = False
 
@@ -144,11 +144,11 @@ def evaluate_rules(expense: Expense, rules: List[Rule]) -> EvalResponse:
     )
 
 # --- API endpoint --------------------------------------------------------
-@router.post(\"/orgs/{orgId}/policy/evaluate\", response_model=EvalResponse)
+@router.post("/orgs/{orgId}/policy/evaluate", response_model=EvalResponse)
 async def evaluate(orgId: str, expense: Expense):
     # Basic validation: ensure expense_id present
     if not expense.expense_id:
-        raise HTTPException(status_code=400, detail=\"expense_id is required\")
+        raise HTTPException(status_code=400, detail="expense_id is required")
 
     # Run evaluation against in-memory rules (DB hooks later)
     resp = evaluate_rules(expense, RULES)
