@@ -1,22 +1,34 @@
-﻿from typing import List, Dict, Any
+﻿# backend/app/services/audit_store.py
+from typing import List, Dict, Any
 from datetime import datetime
+import threading
 
-# Simple in-memory audit log for local testing.
-# Each entry: { timestamp, org_id, expense, result }
-AUDIT_LOG: List[Dict[str, Any]] = []
+_lock = threading.Lock()
 
-def add_audit(org_id: str, expense: Dict[str, Any], result: Dict[str, Any]) -> None:
+# each audit is a dict like:
+# { "id": "<generated>", "orgId": "...", "expenseJson": "...", "resultJson": "...", "createdAt": "..." }
+_AUDITS: List[Dict[str, Any]] = []
+
+def _make_id() -> str:
+    # short unique id for demo
+    return f"aud_{int(datetime.utcnow().timestamp() * 1000)}"
+
+def add_audit(orgId: str, expense_json: Dict[str, Any], result_json: Dict[str, Any]) -> Dict[str, Any]:
+    """Add an audit entry (expense/result are plain dicts)."""
     entry = {
-        "timestamp": datetime.utcnow().isoformat() + "Z",
-        "org_id": org_id,
-        "expense": expense,
-        "result": result
+        "id": _make_id(),
+        "orgId": orgId,
+        "expenseJson": expense_json,
+        "resultJson": result_json,
+        "createdAt": datetime.utcnow().isoformat() + "Z",
     }
-    # insert newest at front
-    AUDIT_LOG.insert(0, entry)
-    # keep log bounded to 50 entries to avoid unbounded memory use
-    if len(AUDIT_LOG) > 50:
-        AUDIT_LOG.pop()
+    with _lock:
+        _AUDITS.insert(0, entry)  # newest first
+        # keep only last 200 for demo safety
+        if len(_AUDITS) > 200:
+            _AUDITS[:] = _AUDITS[:200]
+    return entry
 
 def get_last(n: int = 10) -> List[Dict[str, Any]]:
-    return AUDIT_LOG[:n]
+    with _lock:
+        return _AUDITS[:n]
