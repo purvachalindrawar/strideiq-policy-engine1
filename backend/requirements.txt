@@ -1,0 +1,8 @@
+﻿# requirements.txt
+fastapi
+uvicorn[standard]
+pydantic
+prisma
+asyncpg
+pytest
+httpx

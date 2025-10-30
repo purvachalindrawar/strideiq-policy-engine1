@@ -1,0 +1,25 @@
+﻿# Python
+__pycache__/
+*.pyc
+.env
+venv/
+.envrc
+
+# Node
+node_modules/
+build/
+dist/
+
+# VSCode
+.vscode/
+
+# Database files
+*.sqlite3
+/prisma/dev.db
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Others
+*.log
