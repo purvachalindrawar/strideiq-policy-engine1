@@ -23,3 +23,6 @@ Thumbs.db
 
 # Others
 *.log
+
+# Ignore virtual environments
+.venv/\nbackend/.venv/
