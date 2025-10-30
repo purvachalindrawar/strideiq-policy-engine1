@@ -62,3 +62,30 @@ def test_multiple_rule_conflict_priority():
     assert set(result.matched_rules) == {"r1", "r2"}
     assert result.winning_rule == "r2"  # higher priority wins
     assert result.actions == ["require_approval"]
+def test_rule_ordering_effect_specificity():
+    """Should prefer the rule with more specific conditions when priorities are equal."""
+    from app.routes.evaluate import evaluate_rules, Rule, Condition, Expense
+    rules = [
+        Rule(
+            id="r1",
+            name="Flag over 100",
+            conditions=[Condition(field="amount", op=">", value=100)],
+            actions=["flag"],
+            priority=5
+        ),
+        Rule(
+            id="r2",
+            name="Flag overtime meal",
+            conditions=[
+                Condition(field="amount", op=">", value=100),
+                Condition(field="working_hours", op=">", value=12)
+            ],
+            actions=["flag_overtime"],
+            priority=5  # same priority as r1
+        )
+    ]
+    expense = Expense(expense_id="e4", amount=150, working_hours=13)
+    result = evaluate_rules(expense, rules)
+    assert set(result.matched_rules) == {"r1", "r2"}
+    assert result.winning_rule == "r2"  # more conditions = more specific
+    assert result.actions == ["flag_overtime"]
