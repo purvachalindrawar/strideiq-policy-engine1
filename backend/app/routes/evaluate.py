@@ -171,3 +171,10 @@ from app.services import audit_store
 async def get_audit(orgId: str):
     """Return the last 10 evaluation audits for the given org."""
     return audit_store.get_last(10)
+from app.services import audit_store
+
+# GET /orgs/{orgId}/policy/audit
+@router.get("/orgs/{orgId}/policy/audit")
+async def get_audit(orgId: str):
+    """Return the last 10 evaluation audits for the given org."""
+    return audit_store.get_last(10)
