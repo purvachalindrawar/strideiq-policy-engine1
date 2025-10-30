@@ -26,3 +26,9 @@ Thumbs.db
 
 # Ignore virtual environments
 .venv/\nbackend/.venv/
+
+# Local ignore rules
+.venv/
+*.bak
+h
+
