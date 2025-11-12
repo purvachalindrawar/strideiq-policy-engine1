@@ -103,7 +103,7 @@ docker run --name strideiq-db -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=Pur
 
 ### Set the environment variable
 ```powershell
-$env:DATABASE_URL = "postgresql://postgres:Purv%4019205@localhost:5432/strideiq"
+$env:DATABASE_URL = "postgresql://postgres:0@localhost:5432/strideiq"
 ```
 
 ### Run Prisma migrations and seed data
@@ -142,7 +142,7 @@ Evaluates an expense JSON object against all active rules.
   "working_hours": 13,
   "employee_id": "u_123"
 }
-
+```
 ### Example Response
 ```json
 {
